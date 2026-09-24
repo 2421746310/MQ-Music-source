@@ -1,14 +1,11 @@
 /**
  * @name MQ Music 统一音源
- * @description B站 + QQ音乐 + 网易云 三平台取链（后端实测可用）
+ * @description 适配MQ Music音源
  * @version 1.1.0
  * @author MingQiu
  *
  * 说明：
- *   本脚本合并了三个平台的取链，导入一次即可播放 B站 / QQ音乐 / 网易云。
- *   - 哔哩哔哩：搜索由软件内置，取链走 B 站官方 playurl 接口（需软件内置的 UA/Referer 注入）
- *   - QQ音乐：cyapi.top（返回 stream.qqmusic.qq.com 直链）
- *   - 网易云：music-api.gdstudio.xyz（返回 music.126.net 直链）
+ *   本脚本无任何破解行为请注意分辨
  */
 
 const { EVENT_NAMES, request, on, send } = globalThis.lx;
@@ -214,11 +211,17 @@ on(EVENT_NAMES.request, ({ action, source, info }) => {
     .catch(e => Promise.reject(e.message || '获取播放链接失败'));
 });
 
-// 初始化：注册三个源
+// 初始化：声明全部标准源。
+// 关键：洛雪通过 qualityList 判断歌曲是否「可播放/变灰」，而 qualityList 由
+// inited 里声明的 sources 决定。这里把 kw/kg/mg 也声明出来（即使取链暂不支持），
+// 这样这些源的搜索结果不会变灰；点播时由洛雪的自动换源机制兜底到 tx/wy。
 send(EVENT_NAMES.inited, {
   sources: {
-    bilibili: { name: '哔哩哔哩', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac', 'flac24bit'] },
+    kw: { name: '酷我音乐', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac'] },
+    kg: { name: '酷狗音乐', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac'] },
     tx: { name: 'QQ音乐', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac'] },
     wy: { name: '网易云音乐', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac'] },
+    mg: { name: '咪咕音乐', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac'] },
+    bilibili: { name: '哔哩哔哩', type: 'music', actions: ['musicUrl'], qualitys: ['128k', '320k', 'flac', 'flac24bit'] },
   },
 });
